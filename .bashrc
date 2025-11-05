@@ -76,3 +76,8 @@ if [[ -r /usr/share/bash-completion/bash_completion ]]; then
 elif [[ -r /etc/bash_completion ]]; then
     . /etc/bash_completion
 fi
+
+# run zsh
+if command -v zsh >/dev/null 2>&1; then
+    exec zsh
+fi
