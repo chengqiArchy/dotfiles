@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_HOME="${TARGET_HOME:-$HOME}"
 
 # Default tool set if none provided as arguments.
-DEFAULT_TOOLS=(git curl tmux vim neovim)
+DEFAULT_TOOLS=(git curl tmux vim neovim zsh)
 TOOLS=("$@")
 if [[ ${#TOOLS[@]} -eq 0 ]]; then
   TOOLS=("${DEFAULT_TOOLS[@]}")
@@ -90,30 +90,48 @@ install_tools() {
 }
 
 copy_dotfile() {
-  local filename="$1"
-  local src="$SCRIPT_DIR/$filename"
-  local dest="$TARGET_HOME/$filename"
+  local relative_src="$1"
+  local relative_dest="${2:-$relative_src}"
+  local src="$SCRIPT_DIR/$relative_src"
+  local dest="$TARGET_HOME/$relative_dest"
 
-  if [[ ! -f "$src" ]]; then
-    log "Skipping $filename (not found in repository)."
+  if [[ ! -e "$src" ]]; then
+    log "Skipping $relative_src (not found in repository)."
     return
   fi
 
-  if [[ -f "$dest" ]]; then
+  if [[ -e "$dest" ]]; then
     local backup="$dest.bak.$(date +%s)"
     log "Backing up existing $dest to $backup"
-    cp "$dest" "$backup"
+    if [[ -d "$dest" && ! -L "$dest" ]]; then
+      cp -R "$dest" "$backup"
+    else
+      cp "$dest" "$backup"
+    fi
   fi
 
-  log "Transferring $filename to $dest"
+  log "Transferring $relative_src to $dest"
   mkdir -p "$(dirname "$dest")"
-  cp "$src" "$dest"
+  # Ensure replacement instead of nesting when copying directories.
+  if [[ -d "$dest" && ! -L "$dest" ]]; then
+    rm -rf "$dest"
+  else
+    rm -f "$dest"
+  fi
+
+  if [[ -d "$src" && ! -L "$src" ]]; then
+    cp -R "$src" "$dest"
+  else
+    cp "$src" "$dest"
+  fi
 }
 
 main() {
   install_tools
   copy_dotfile ".bashrc"
-#   copy_dotfile ".tmux.conf"
+  copy_dotfile ".zshrc"
+  copy_dotfile "nvim" ".config/nvim"
+  copy_dotfile ".tmux.conf"
   log "Devpod setup complete."
 }
 
