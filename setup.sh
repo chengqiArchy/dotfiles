@@ -126,12 +126,20 @@ copy_dotfile() {
   fi
 }
 
+install_mise() {
+  curl https://mise.run | sh
+  eval "$(mise activate bash)"
+  eval "$(mise activate zsh)"
+  mise use --global neovim
+}
+
 main() {
   install_tools
   copy_dotfile ".bashrc"
   copy_dotfile ".zshrc"
   copy_dotfile "nvim" ".config/nvim"
   copy_dotfile ".tmux.conf"
+  install_mise
   log "Devpod setup complete."
 }
 
