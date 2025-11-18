@@ -139,7 +139,7 @@ main() {
   copy_dotfile ".zshrc"
   copy_dotfile "nvim" ".config/nvim"
   copy_dotfile ".tmux.conf"
-  install_mise
+  # install_mise
   log "Devpod setup complete."
 }
 
